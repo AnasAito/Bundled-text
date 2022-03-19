@@ -3,6 +3,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 # import confusion matrix , classification report, accuracy_score
 from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
+import numpy as np 
 # compute false negative rate
 
 import pandas as pd
@@ -24,22 +25,25 @@ def prepare_training_data(data):
 def get_model_results(model,data):
     # prepare data
     X = data.drop(['is_bundled'], axis=1)
-    y = data['is_bundled']
+    y = data[['is_bundled']]
     # predict
     y_pred = model.predict(X)
-    # get score
-    score = model.score(X,y)
+    # get index of false negatives
+    temp_table = y.copy()
+    temp_table['pred'] = y_pred
+    fn_index = temp_table[(temp_table['is_bundled']==1)&(temp_table['pred']==0)].index
+
+
+
     # get confusion matrix
     cm = confusion_matrix(y, y_pred)
     # get classification report
     repport = classification_report(y, y_pred)
-    def get_fnr(cm):
-        tn, fp, fn, tp = cm.ravel()
-        return fn/(fn+tp)
+
     # get model features
     features =model.feature_names_in_
 
-    return score, cm, repport ,get_fnr(cm), features
+    return  cm, repport , features , fn_index
 
 def run_experiment(data,config):
     model_type = config['model_type']
@@ -67,6 +71,6 @@ def run_experiment(data,config):
     # fit model
     model.fit(X, y)
     # get results
-    score, cm, repport ,fnr, features = get_model_results(model,data_enriched)
-    return score, cm, repport ,fnr, features , cach_data
+    cm, repport , features ,fn_index= get_model_results(model,data_enriched)
+    return  cm, repport , features ,fn_index, cach_data
 
