@@ -17,10 +17,10 @@ def prepare_training_data(data):
     # sample 
     data_1 = data[data['is_bundled']==1].sample(sample_count)
     data_0 = data[data['is_bundled']==0].sample(sample_count)
-    data_train = pd.concat([data_0,data_1]).values
+    data_train = pd.concat([data_0,data_1])
     # prepare data 
-    X = data.drop(['is_bundled'], axis=1)
-    y = data['is_bundled']
+    X = data_train.drop(['is_bundled'], axis=1)
+    y = data_train['is_bundled']
     return X,y
 
 def get_model_results(model,data):
@@ -73,7 +73,7 @@ def run_experiment(data,config):
     model.fit(X, y)
     # get results
     cm, repport , features ,fn_index= get_model_results(model,data_enriched)
-    return  cm, repport , features ,fn_index, cach_data
+    return  cm, repport , features ,fn_index, cach_data,model
 
 
 class Span_extractor:
